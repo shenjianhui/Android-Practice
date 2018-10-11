@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/order_no_name"
+        android:layout_width="92dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:text="菜名" />
+
+    <TextView
+        android:id="@+id/order_no_price"
+        android:layout_width="46dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:text="价格" />
+
+    <TextView
+        android:id="@+id/order_no_number"
+        android:layout_width="45dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:text="数量" />
+
+    <TextView
+        android:id="@+id/order_no_remark"
+        android:layout_width="96dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:text="备注" />
+
+    <Button
+        android:id="@+id/order_no_choose"
+        android:layout_width="67dp"
+        android:layout_height="40dp"
+
+        android:layout_weight="1"
+        android:text="退点" />
+
+
+</LinearLayout>

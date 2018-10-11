@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/id_item1" android:title="已点菜品"/>
+    <item android:id="@+id/id_item2" android:title="查看订单"/>
+    <item android:id="@+id/id_item3" android:title="呼叫服务"/>
+</menu>
