@@ -1,6 +1,21 @@
 package es.source.code.activity;
 
+import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
@@ -14,12 +29,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import es.source.code.model.AllDish;
 import es.source.code.model.User;
+import es.source.code.service.ServerObserverService;
 import es.source.code.tool.AllDishAdapter;
+import es.source.code.tool.DBOpenHelper;
 import es.source.code.tool.MyPagerAdapter;
+import static es.source.code.tool.MyApplication.getContext;
 
 public class FoodView extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
@@ -27,18 +46,83 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
     private List<AllDish> hotDishList = new ArrayList<>();
     private List<AllDish> seaFoodList = new ArrayList<>();
     private List<AllDish> drinkList = new ArrayList<>();
-    private ViewPager pager;
+    public ViewPager pager;
     private List<View> viewList = new ArrayList<View>();
     private PagerAdapter viewAdapter;
     private LayoutInflater inflater;
     private List<String> titles = new ArrayList<String>();
     private PagerTabStrip pagerTitle;
     User user = new User();
+    AllDish d = new AllDish();
+    public List<AllDish> orderDishList = new ArrayList<>();
+    int FLAG;
+    int MenuFlag;
+
+    @SuppressLint("HandlerLeak")
+    private Handler sMessageHandler = new Handler(){
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case 10:
+                    //更新菜品
+                    //Log.i("info", "进行菜品更新----"+ msg.getData().getString("name") +"---"+msg.getData().getInt("inventory"));
+                    String name1 = msg.getData().getString("name1");
+                    int inventory1 = msg.getData().getInt("inventory1");
+                    String name2 = msg.getData().getString("name2");
+                    int inventory2 = msg.getData().getInt("inventory2");
+                    DBOpenHelper helper = new DBOpenHelper(getContext(),"Dish.db");
+                    SQLiteDatabase db = helper.getWritableDatabase();
+                    db.execSQL("update dish set inventory=inventory+1 where dishName=?",new String[]{name1});
+                    db.execSQL("update dish set inventory=inventory-1 where dishName=?",new String[]{name2});
+                    db.close();
+                    SharedPreferences sharedPreferences = getSharedPreferences("menuFlag",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("flag",0);
+                    editor.apply();
+                    refresh();
+                    break;
+                default:
+                    break;
+            }
+            unbindService(connection);
+        }
+    };
+
+    public Messenger mMessenger;
+    public Message mMessage;
+    public ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mMessenger = new Messenger(service);
+            if(FLAG == 1) {
+                mMessage = Message.obtain(null, 1);
+            }else if(FLAG == 0){
+                mMessage = Message.obtain(null, 0);
+            }
+            Bundle mBundle=new Bundle();
+            mBundle.putString("msg", "客户端--》服务端");
+            mMessage.setData(mBundle);
+            mMessage.replyTo=new Messenger(sMessageHandler);
+            try {
+                mMessenger.send(mMessage);
+            }catch (RemoteException e){
+                e.printStackTrace();
+            }
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.food_view);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("menuFlag",Context.MODE_PRIVATE);
+        MenuFlag = sharedPreferences.getInt("flag",1);
 
         Intent intent = getIntent();
         user = (User) intent.getSerializableExtra("user_info");
@@ -50,7 +134,6 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
         titles.add("海鲜");
         titles.add("酒水");
         inflater = LayoutInflater.from(this);
-
         View view1 = inflater.inflate(R.layout.recyclerview, null);
         View view2 = inflater.inflate(R.layout.recyclerview, null);
         View view3 = inflater.inflate(R.layout.recyclerview, null);
@@ -65,35 +148,105 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         tabLayout.setupWithViewPager(pager);
 
-        initColdDishes();
-        initHotDishes();
-        initSeaFoods();
-        initDrinks();
+        initDishes();
+
         RecyclerView recyclerView1 = view1.findViewById(R.id.recyclerView);
+        LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(this);
+        recyclerView1.setLayoutManager(linearLayoutManager1);
+        AllDishAdapter adapter1 = new AllDishAdapter(coldDishList,d);
+        recyclerView1.setAdapter(adapter1);
+
         RecyclerView recyclerView2 = view2.findViewById(R.id.recyclerView);
         RecyclerView recyclerView3 = view3.findViewById(R.id.recyclerView);
         RecyclerView recyclerView4 = view4.findViewById(R.id.recyclerView);
-        LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(this);
+
         LinearLayoutManager linearLayoutManager2 = new LinearLayoutManager(this);
         LinearLayoutManager linearLayoutManager3 = new LinearLayoutManager(this);
         LinearLayoutManager linearLayoutManager4 = new LinearLayoutManager(this);
-        recyclerView1.setLayoutManager(linearLayoutManager1);
+
         recyclerView2.setLayoutManager(linearLayoutManager2);
         recyclerView3.setLayoutManager(linearLayoutManager3);
         recyclerView4.setLayoutManager(linearLayoutManager4);
-        AllDishAdapter adapter1 = new AllDishAdapter(coldDishList);
-        AllDishAdapter adapter2 = new AllDishAdapter(hotDishList);
-        AllDishAdapter adapter3 = new AllDishAdapter(seaFoodList);
-        AllDishAdapter adapter4 = new AllDishAdapter(drinkList);
-        recyclerView1.setAdapter(adapter1);
+
+        AllDishAdapter adapter2 = new AllDishAdapter(hotDishList,d);
+        AllDishAdapter adapter3 = new AllDishAdapter(seaFoodList,d);
+        AllDishAdapter adapter4 = new AllDishAdapter(drinkList,d);
+
         recyclerView2.setAdapter(adapter2);
         recyclerView3.setAdapter(adapter3);
         recyclerView4.setAdapter(adapter4);
 
+        adapter1.setsubClickListener(new AllDishAdapter.SubClickListener() {
+            public void OntopicClickListener(View v,AllDish dish, int position) {
+                d = dish;
+                int Flag=0;
+                for(int i=0;i<orderDishList.size();i++){
+                    if(d.getDishId()==orderDishList.get(i).getDishId()){
+                        Flag = 1;
+                        orderDishList.get(i).setNumber(orderDishList.get(i).getNumber()+1);
+                    }
+                }
+                if(Flag == 0) {
+                    orderDishList.add(d);
+                }
+            }
+        });
+        adapter2.setsubClickListener(new AllDishAdapter.SubClickListener() {
+            public void OntopicClickListener(View v,AllDish dish, int position) {
+                d = dish;
+                int Flag=0;
+                for(int i=0;i<orderDishList.size();i++){
+                    if(d.getDishId()==orderDishList.get(i).getDishId()){
+                        Flag = 1;
+                        orderDishList.get(i).setNumber(orderDishList.get(i).getNumber()+1);
+                    }
+                }
+                if(Flag == 0) {
+                    orderDishList.add(d);
+                }
+            }
+        });
+        adapter3.setsubClickListener(new AllDishAdapter.SubClickListener() {
+            public void OntopicClickListener(View v,AllDish dish, int position) {
+                d = dish;
+                int Flag=0;
+                for(int i=0;i<orderDishList.size();i++){
+                    if(d.getDishId()==orderDishList.get(i).getDishId()){
+                        Flag = 1;
+                        orderDishList.get(i).setNumber(orderDishList.get(i).getNumber()+1);
+                    }
+                }
+                if(Flag == 0) {
+                    orderDishList.add(d);
+                }
+            }
+        });
+        adapter4.setsubClickListener(new AllDishAdapter.SubClickListener() {
+            public void OntopicClickListener(View v,AllDish dish, int position) {
+                d = dish;
+                int Flag=0;
+                for(int i=0;i<orderDishList.size();i++){
+                    if(d.getDishId()==orderDishList.get(i).getDishId()){
+                        Flag = 1;
+                        orderDishList.get(i).setNumber(orderDishList.get(i).getNumber()+1);
+                    }
+                }
+                if(Flag == 0) {
+                    orderDishList.add(d);
+                }
+            }
+        });
+
+
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
+        if(MenuFlag == 1) {
+            getMenuInflater().inflate(R.menu.menu, menu);
+        }else{
+            getMenuInflater().inflate(R.menu.menu1, menu);
+        }
         return true;
     }
 
@@ -107,6 +260,7 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
                 Intent intent = new Intent(this,FoodOrderView.class);
                 intent.putExtra("user_info", user);
                 intent.putExtra("YesOrNo", data);
+                intent.putExtra("orderDishList", (Serializable) orderDishList);
                 startActivity(intent);
                 break;
             case  R.id.id_item2:
@@ -114,10 +268,32 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
                 Intent intent1 = new Intent(this,FoodOrderView.class);
                 intent1.putExtra("user_info", user);
                 intent1.putExtra("YesOrNo", data1);
+                intent1.putExtra("orderDishList", (Serializable) orderDishList);
                 startActivity(intent1);
                 break;
             case  R.id.id_item3:
                 Toast.makeText(this, "呼叫服务", Toast.LENGTH_SHORT).show();
+                break;
+            case  R.id.id_item4:
+                if(item.getTitle().equals("启动实时更新")) {
+                    FLAG = 1;
+                    //item.setTitle("停止实时更新");
+                    Intent bindIntent = new Intent(this, ServerObserverService.class);
+                    bindService(bindIntent, connection, BIND_AUTO_CREATE);
+
+                } else if(item.getTitle().equals("停止实时更新")) {
+                    FLAG = 0;
+                    Intent bindIntent = new Intent(this, ServerObserverService.class);
+                    bindService(bindIntent, connection, BIND_AUTO_CREATE);
+                    //item.setTitle("启动实时更新");
+                    SharedPreferences sharedPreferences = getSharedPreferences("menuFlag",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove("flag");
+                    editor.apply();
+                    Toast.makeText(this,"已停止实时更新",Toast.LENGTH_SHORT).show();
+                    item.setTitle("启动实时更新");
+                    //unbindService(connection);
+                }
                 break;
         }
         return true;
@@ -138,39 +314,53 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
         //Toast.makeText(this, "这是第"+(arg0+1)+"个界面", Toast.LENGTH_SHORT).show();
     }
 
-    private void initColdDishes(){
-        for(int i = 0;i < 5; i++){
-            AllDish dish1 = new AllDish(1,"鱼卵沙拉冷盘",R.drawable.colddish1,"18¥");
-            coldDishList.add(dish1);
-            AllDish dish2 = new AllDish(2,"卤牛腱冷盘",R.drawable.colddish2,"28¥");
-            coldDishList.add(dish2);
+    private void initDishes(){
+        DBOpenHelper helper = new DBOpenHelper(this,"Dish.db");
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c = db.rawQuery("select * from dish",null);
+        if(c!=null){
+            while (c.moveToNext()){
+                int dishId = c.getInt(c.getColumnIndex("_id"));
+                String dishName = c.getString(c.getColumnIndex("dishName"));
+                byte[] pic = c.getBlob(c.getColumnIndex("dishImage"));
+                Bitmap dishImage = BitmapFactory.decodeByteArray(pic, 0, pic.length);
+                int dishPrice = c.getInt(c.getColumnIndex("dishPrice"));
+                int inventory = c.getInt(c.getColumnIndex("inventory"));
+                String style = c.getString(c.getColumnIndex("style"));
+                AllDish myDish = new AllDish(dishId,dishName, dishImage,inventory ,dishPrice);
+                if(style.equals("冷菜")){
+                    coldDishList.add(myDish);
+                }else if(style.equals("热菜")){
+                    hotDishList.add(myDish);
+                }else if(style.equals("海鲜")){
+                    seaFoodList.add(myDish);
+                }else if(style.equals("酒水")){
+                    drinkList.add(myDish);
+                }
+
+            }
+            c.close();
         }
+        db.close();
     }
 
-    private void initHotDishes(){
-        for(int i = 0;i < 5; i++){
-            AllDish dish1 = new AllDish(3,"糖醋排骨",R.drawable.hotdish1,"36¥");
-            hotDishList.add(dish1);
-            AllDish dish2 = new AllDish(4,"可乐鸡翅",R.drawable.hotdish2,"28¥");
-            hotDishList.add(dish2);
-        }
+
+    private void refresh(){
+        finish();
+        Intent intent = new Intent(FoodView.this, FoodView.class);
+        intent.putExtra("user_info", user);
+        startActivity(intent);
+        overridePendingTransition(0,0);
     }
 
-    private void initSeaFoods(){
-        for(int i = 0;i < 5; i++){
-            AllDish dish1 = new AllDish(5,"什锦海鲜面疙瘩",R.drawable.seafood1,"16¥");
-            seaFoodList.add(dish1);
-            AllDish dish2 = new AllDish(6,"海鲜煎饼",R.drawable.seafood2,"12¥");
-            seaFoodList.add(dish2);
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //unbindService(connection);
+        SharedPreferences sharedPreferences = getSharedPreferences("menuFlag",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove("flag");
+        editor.apply();
     }
 
-    private void initDrinks(){
-        for(int i = 0;i < 5; i++){
-            AllDish dish1 = new AllDish(7,"野莓奶昔",R.drawable.drink1,"10¥");
-            drinkList.add(dish1);
-            AllDish dish2 = new AllDish(8,"玫瑰情人露",R.drawable.drink2,"14¥");
-            drinkList.add(dish2);
-        }
-    }
 }

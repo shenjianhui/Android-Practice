@@ -15,13 +15,25 @@ import es.source.code.activity.R;
 import es.source.code.model.AllDish;
 
 public class AllDishAdapter extends RecyclerView.Adapter<AllDishAdapter.ViewHolder> {
-    private List<AllDish> myAllDishList;
+    public List<AllDish> myAllDishList;
+    private SubClickListener subClickListener;
+    public AllDish d;
+
+    public void setsubClickListener(SubClickListener topicClickListener) {
+        this.subClickListener = topicClickListener;
+    }
+
+    public interface SubClickListener {
+        void OntopicClickListener(View v, AllDish d, int position);
+    }
+
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         View allDishView;
         ImageView dishImage;
         TextView dishName;
         TextView dishPrice;
+        TextView inventory;
         Button dishSelect;
 
         public ViewHolder(View view){
@@ -31,11 +43,14 @@ public class AllDishAdapter extends RecyclerView.Adapter<AllDishAdapter.ViewHold
             dishName = view.findViewById(R.id.alldish_name);
             dishPrice = view.findViewById(R.id.alldish_price);
             dishSelect = view.findViewById(R.id.alldish_select);
+            inventory = view.findViewById(R.id.alldish_inventory);
+
         }
     }
 
-    public AllDishAdapter(List<AllDish> allDishList){
+    public AllDishAdapter(List<AllDish> allDishList,AllDish dish){
         myAllDishList = allDishList;
+        d = dish;
     }
 
     @Override
@@ -61,12 +76,11 @@ public class AllDishAdapter extends RecyclerView.Adapter<AllDishAdapter.ViewHold
                     int position = holder.getAdapterPosition();
                     AllDish allDish = myAllDishList.get(position);
                     Toast.makeText(view.getContext(), allDish.getDishName() + ",点菜成功！", Toast.LENGTH_SHORT).show();
-                    holder.dishSelect.setText("退点");
-                }else if(holder.dishSelect.getText().equals("退点")){
-                    int position = holder.getAdapterPosition();
-                    AllDish allDish = myAllDishList.get(position);
-                    Toast.makeText(view.getContext(),allDish.getDishName()+",退点成功！",Toast.LENGTH_SHORT).show();
-                    holder.dishSelect.setText("点菜");
+                    d = new AllDish(allDish.getDishId(),allDish.getDishName(),allDish.getDishPrice());
+                    d.setNumber(1);
+                    if (subClickListener != null) {
+                        subClickListener.OntopicClickListener(view, d, position);
+                    }
                 }
             }
         });
@@ -76,9 +90,10 @@ public class AllDishAdapter extends RecyclerView.Adapter<AllDishAdapter.ViewHold
     @Override
     public void onBindViewHolder(AllDishAdapter.ViewHolder holder, int position) {
         AllDish allDish = myAllDishList.get(position);
-        holder.dishImage.setImageResource(allDish.getDishImageId());
+        holder.dishImage.setImageBitmap(allDish.getDishImg());
         holder.dishName.setText(allDish.getDishName());
-        holder.dishPrice.setText(allDish.getDishPrice());
+        holder.inventory.setText("库存:"+allDish.getInventory());
+        holder.dishPrice.setText(allDish.getDishPrice()+"¥");
         holder.dishSelect.setText("点菜");
     }
 

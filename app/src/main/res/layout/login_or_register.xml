@@ -3,7 +3,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginOrRegister">
+    tools:context=".LoginOrRegister"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    >
+
+    <EditText
+        android:id="@+id/editText_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:ems="10"
+        android:inputType="text"
+
+        android:hint="请输入您的用户名" />
+
+    <EditText
+        android:id="@+id/editText_pwd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText_username"
+        android:layout_alignStart="@+id/editText_username"
+        android:layout_alignLeft="@+id/editText_username"
+        android:layout_marginTop="12dp"
+        android:ems="10"
+        android:inputType="textPassword"
+
+        android:hint="请输入您的密码" />
 
     <Button
         android:id="@+id/button_back"
@@ -24,7 +52,6 @@
         android:layout_alignTop="@+id/button_back"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="0dp"
         android:layout_marginEnd="45dp"
         android:layout_marginRight="45dp"
         android:text="@string/button_login" />
@@ -34,37 +61,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/button_back"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="140dp"
-        android:layout_marginRight="140dp"
+        android:layout_centerInParent="true"
         android:text="注册" />
-
-    <EditText
-        android:id="@+id/editText_username"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:ems="10"
-        android:inputType="text"
-        android:hint="请输入您的用户名" />
-
-    <EditText
-        android:id="@+id/editText_pwd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editText_username"
-        android:layout_alignStart="@+id/editText_username"
-        android:layout_alignLeft="@+id/editText_username"
-        android:layout_marginStart="2dp"
-        android:layout_marginLeft="2dp"
-        android:layout_marginTop="12dp"
-        android:ems="10"
-        android:inputType="textPassword"
-        android:hint="请输入您的密码" />
 
     <ProgressBar
         android:id="@+id/progressBar_login"

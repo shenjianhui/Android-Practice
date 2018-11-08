@@ -1,5 +1,7 @@
 package es.source.code.activity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -34,12 +36,14 @@ public class SCOSEntry extends AppCompatActivity{
         }
 
         if ((x1 - x2 > 50)&&(y1 - y2 < 50)&&(y2 - y1 < 50)&&(x2 - x1 < 50)) {
-            //Toast.makeText(SCOSEntry.this, "向左滑", Toast.LENGTH_SHORT).show();
-            //Intent intent = new Intent("scos.intent.action.SCOSMAIN");
-            //intent.addCategory("scos.intent.category.SCOSLAUNCHER");
-            String data = "FromEntry";
-            Intent intent = new Intent(this,MainScreen.class);
-            intent.putExtra("extra_data", data);
+            SharedPreferences sharedPreferences = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
+            int Flag = sharedPreferences.getInt("loginState",-1);
+            if(Flag==0){
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.clear();
+                editor.apply();
+            }
+            Intent intent = new Intent(this,LoginOrRegister.class);
             startActivity(intent);
         }
         return super.onTouchEvent(event);

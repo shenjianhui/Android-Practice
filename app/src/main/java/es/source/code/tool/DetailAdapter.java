@@ -15,6 +15,16 @@ import es.source.code.model.AllDish;
 
 public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder> {
     private List<AllDish> myDetailDishList;
+    private SubClickListener subClickListener;
+    public AllDish d;
+
+    public void setsubClickListener(SubClickListener topicClickListener) {
+        this.subClickListener = topicClickListener;
+    }
+
+    public interface SubClickListener {
+        void OntopicClickListener(View v, AllDish d, int position);
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         View DetailDishView;
@@ -51,12 +61,13 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
                     int position = holder.getAdapterPosition();
                     AllDish detailDish = myDetailDishList.get(position);
                     Toast.makeText(view.getContext(),detailDish.getDishName()+",点菜成功！",Toast.LENGTH_SHORT).show();
-                    holder.dishSelect.setText("退点");
-                }else if(holder.dishSelect.getText().equals("退点")){
-                    int position = holder.getAdapterPosition();
-                    AllDish detailDish = myDetailDishList.get(position);
-                    Toast.makeText(view.getContext(),detailDish.getDishName()+",退点成功！",Toast.LENGTH_SHORT).show();
-                    holder.dishSelect.setText("点菜");
+                    d = new AllDish(detailDish.getDishId(),detailDish.getDishName(),detailDish.getDishPrice());
+                    String remark = holder.dishRemark.getText().toString();
+                    d.setDishRemark(remark);
+                    d.setNumber(1);
+                    if (subClickListener != null) {
+                        subClickListener.OntopicClickListener(view, d, position);
+                    }
                 }
             }
         });
@@ -66,10 +77,10 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
     @Override
     public void onBindViewHolder(DetailAdapter.ViewHolder holder, int position) {
         AllDish detailDish = myDetailDishList.get(position);
-        holder.dishImage.setImageResource(detailDish.getDishImageId());
+        holder.dishImage.setImageBitmap(detailDish.getDishImg());
         holder.dishName.setText(detailDish.getDishName());
-        holder.dishPrice.setText(detailDish.getDishPrice());
-        //holder.dishPrice.setText("");
+        holder.dishPrice.setText(detailDish.getDishPrice()+"¥");
+        //holder.dishRemark.setText();
         holder.dishSelect.setText("点菜");
     }
 

@@ -1,18 +1,45 @@
 package es.source.code.model;
 
 
-public class AllDish {
+import android.graphics.Bitmap;
+
+import java.io.Serializable;
+
+public class AllDish  implements Serializable {
     private String dishName;
     private int dishImageId;
-    private String dishPrice;
+    private Bitmap dishImg;
+    private int dishPrice;
+    private String dishRemark;
     private String dishSelect;
+    private int number;
+    private int inventory;
     private int dishId;
 
+    public AllDish() {
 
-    public AllDish(int dishId,String dishName, int dishImageId, String dishPrice) {
+    }
+
+    public AllDish(int dishId,String dishName, Bitmap dishImg, int dishPrice) {
         this.dishId = dishId;
         this.dishName = dishName;
-        this.dishImageId = dishImageId;
+        this.dishImg = dishImg;
+        this.dishPrice = dishPrice;
+
+    }
+
+    public AllDish(int dishId,String dishName, int dishPrice) {
+        this.dishId = dishId;
+        this.dishName = dishName;
+        this.dishPrice = dishPrice;
+
+    }
+
+    public AllDish(int dishId,String dishName, Bitmap dishImg, int inventory,int dishPrice) {
+        this.dishId = dishId;
+        this.dishName = dishName;
+        this.dishImg = dishImg;
+        this.inventory = inventory;
         this.dishPrice = dishPrice;
 
     }
@@ -33,15 +60,45 @@ public class AllDish {
         this.dishSelect = dishSelect;
     }
 
-    public String getDishPrice() {
+    public int getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(int inventory) {
+        this.inventory = inventory;
+    }
+
+    public int getDishPrice() {
         return dishPrice;
     }
 
-    public void setDishPrice(String dishPrice) {
+    public void setDishPrice(int dishPrice) {
         this.dishPrice = dishPrice;
     }
 
+    public int getNumber() {
+        return number;
+    }
 
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public Bitmap getDishImg() {
+        return dishImg;
+    }
+
+    public void setDishImg(Bitmap dishImg) {
+        this.dishImg = dishImg;
+    }
+
+    public String getDishRemark() {
+        return dishRemark;
+    }
+
+    public void setDishRemark(String dishRemark) {
+        this.dishRemark = dishRemark;
+    }
 
     public String getDishName() {
         return dishName;

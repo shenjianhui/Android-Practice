@@ -6,19 +6,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.util.List;
 import es.source.code.activity.R;
-import es.source.code.model.Order;
+import es.source.code.model.AllDish;
 
 public class OrderNoAdapter extends RecyclerView.Adapter<OrderNoAdapter.ViewHolder> {
-    private List<Order> myOrderList;
+    private static List<AllDish> myAllDish;
     private static final int NORMAL_TYPE = 0;
     private static final int FOOT_TYPE = 1;
+    private SubClickListener subClickListener;
+    public AllDish d;
     private View myFooterView;
 
-    public OrderNoAdapter(List<Order> orderList){
-        myOrderList = orderList;
+    public void setsubClickListener(SubClickListener topicClickListener) {
+        this.subClickListener = topicClickListener;
+    }
+
+    public interface SubClickListener {
+        void OntopicClickListener(View v, AllDish d, int position);
+    }
+
+    public OrderNoAdapter(List<AllDish> allDish){
+        myAllDish = allDish;
     }
 
     public View getFooterView() {
@@ -44,16 +53,18 @@ public class OrderNoAdapter extends RecyclerView.Adapter<OrderNoAdapter.ViewHold
             super(view);
             if (viewType == FOOT_TYPE){
                 totalNumber = view.findViewById(R.id.order_number);
-                totalNumber.setText("菜品总数：3份");
+                totalNumber.setText("菜品总数："+myAllDish.size());
                 totalPrice = view.findViewById(R.id.order_price);
-                totalPrice.setText("订单总价：92¥");
-                Submit = view.findViewById(R.id.order_submit);
-                Submit.setText("提交订单");
-                Submit.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View view) {
-                        Toast.makeText(view.getContext(),"you clicked at 提交订单",Toast.LENGTH_SHORT).show();
+                if(myAllDish.size()==0){
+                    totalPrice.setText("订单总价：0");
+                }else {
+                    int Price = 0;
+                    for(int i=0;i<myAllDish.size();i++) {
+                        Price += myAllDish.get(i).getDishPrice()*myAllDish.get(i).getNumber();
+                        totalPrice.setText("订单总价：" + Price +"¥");
                     }
-                });
+                }
+                Submit = view.findViewById(R.id.order_submit);
                 return;
             }
             orderView = view;
@@ -62,11 +73,6 @@ public class OrderNoAdapter extends RecyclerView.Adapter<OrderNoAdapter.ViewHold
             orderNumber = view.findViewById(R.id.order_no_number);
             orderRemark = view.findViewById(R.id.order_no_remark);
             orderChoose = view.findViewById(R.id.order_no_choose);
-            orderChoose.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View view) {
-                    Toast.makeText(view.getContext(),"you clicked at 退点",Toast.LENGTH_SHORT).show();
-                }
-            });
 
         }
     }
@@ -80,7 +86,41 @@ public class OrderNoAdapter extends RecyclerView.Adapter<OrderNoAdapter.ViewHold
             return new ViewHolder(myFooterView,FOOT_TYPE);
         }
         View normal_view = LayoutInflater.from(parent.getContext()).inflate(R.layout.order_no,parent,false);
-        return new ViewHolder(normal_view,NORMAL_TYPE);
+        final ViewHolder holder = new ViewHolder(normal_view,NORMAL_TYPE);
+        holder.orderChoose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int position = holder.getAdapterPosition();
+                AllDish allDish = myAllDish.get(position);
+                d = allDish;
+                if(subClickListener != null){
+                    subClickListener.OntopicClickListener(view,d,position);
+                }
+            }
+        });
+        return holder;
+
+    }
+
+
+    @Override
+    public void onBindViewHolder(OrderNoAdapter.ViewHolder holder, int position) {
+
+        if ( getItemViewType(position) == NORMAL_TYPE) {
+            AllDish allDish = myAllDish.get(position);
+            holder.orderName.setText(allDish.getDishName());
+            holder.orderPrice.setText(allDish.getDishPrice()+"¥");
+            holder.orderNumber.setText(allDish.getNumber()+"份");
+            if(allDish.getDishRemark()==null){
+                holder.orderRemark.setText("备注：无");
+            }else {
+                holder.orderRemark.setText("备注：" + allDish.getDishRemark());
+            }
+            holder.orderChoose.setText("退点");
+            return;
+        }else{
+            return;
+        }
 
     }
 
@@ -97,28 +137,11 @@ public class OrderNoAdapter extends RecyclerView.Adapter<OrderNoAdapter.ViewHold
     }
 
     @Override
-    public void onBindViewHolder(OrderNoAdapter.ViewHolder holder, int position) {
-
-        if ( getItemViewType(position) == NORMAL_TYPE) {
-            Order order = myOrderList.get(position);
-            holder.orderName.setText(order.getOrderName());
-            holder.orderPrice.setText(order.getOrderPrice());
-            holder.orderNumber.setText(order.getOrderNumber());
-            holder.orderRemark.setText(order.getOrderRemark());
-            holder.orderChoose.setText("退点");
-            return;
-        }else{
-            return;
-        }
-
-    }
-
-    @Override
     public int getItemCount() {
         if(myFooterView == null){
-            return myOrderList.size();
+            return myAllDish.size();
         }else{
-            return myOrderList.size()+1;
+            return myAllDish.size()+1;
         }
 
     }

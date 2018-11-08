@@ -1,20 +1,33 @@
 package es.source.code.activity;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import es.source.code.model.AllDish;
+import es.source.code.model.User;
+import es.source.code.tool.DBOpenHelper;
 import es.source.code.tool.DetailAdapter;
 
 public class FoodDetailed extends AppCompatActivity{
 
     private List<AllDish> detailDishList = new ArrayList<>();
+    public AllDish d = new AllDish();
+    public List<AllDish> orderDishList = new ArrayList<>();
+    User user = new User();
+    int dishId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,9 +36,25 @@ public class FoodDetailed extends AppCompatActivity{
 
         initDetail();
         Intent intent = getIntent();
-        int dishId = intent.getIntExtra("dish_id",-1);
-       // Toast.makeText(this,dishId,Toast.LENGTH_SHORT).show();
-
+        dishId = intent.getIntExtra("dish_id",-1);
+        user = (User) intent.getSerializableExtra("user_info");
+        try {
+            String name = intent.getStringExtra("dishName");
+            if(!name.equals("")){
+                DBOpenHelper helper = new DBOpenHelper(this,"Dish.db");
+                SQLiteDatabase db = helper.getWritableDatabase();
+                Cursor cursor = db.rawQuery("select * from dish where dishName=?",new String[]{name});
+                if(cursor!=null) {
+                    while (cursor.moveToNext()) {
+                        int id = cursor.getInt(cursor.getColumnIndex("_id"));
+                        dishId = id;
+                    }
+                }
+                cursor.close();
+                db.close();
+            }
+        }catch(Exception e){
+        }
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -33,27 +62,75 @@ public class FoodDetailed extends AppCompatActivity{
         DetailAdapter adapter = new DetailAdapter(detailDishList);
         recyclerView.setAdapter(adapter);
         MoveToPosition(linearLayoutManager,recyclerView,dishId-1);
+        adapter.setsubClickListener(new DetailAdapter.SubClickListener() {
+            public void OntopicClickListener(View v, AllDish dish, int position) {
+                d=dish;
+                int Flag=0;
+                for(int i=0;i<orderDishList.size();i++){
+                    if(d.getDishId()==orderDishList.get(i).getDishId()){
+                        Flag = 1;
+                        orderDishList.get(i).setNumber(orderDishList.get(i).getNumber()+1);
+                    }
+                }
+                if(Flag == 0) {
+                    orderDishList.add(d);
+                }
+            }
+        });
     }
 
     private void initDetail() {
 
-        AllDish detail1 = new AllDish(1,"鱼卵沙拉冷盘", R.drawable.colddish1, "18¥");
-        detailDishList.add(detail1);
-        AllDish detail2 = new AllDish(2,"卤牛腱冷盘",R.drawable.colddish2,"28¥");
-        detailDishList.add(detail2);
-        AllDish detail3 = new AllDish(3,"糖醋排骨", R.drawable.hotdish1, "36¥");
-        detailDishList.add(detail3);
-        AllDish detail4 = new AllDish(4,"可乐鸡翅",R.drawable.hotdish2,"28¥");
-        detailDishList.add(detail4);
-        AllDish detail5 = new AllDish(5,"什锦海鲜面疙瘩", R.drawable.seafood1, "16¥");
-        detailDishList.add(detail5);
-        AllDish detail6 = new AllDish(6,"海鲜煎饼",R.drawable.seafood2,"12¥");
-        detailDishList.add(detail6);
-        AllDish detail7 = new AllDish(7,"野莓奶昔", R.drawable.drink1, "10¥");
-        detailDishList.add(detail7);
-        AllDish detail8 = new AllDish(8,"玫瑰情人露",R.drawable.drink2,"14¥");
-        detailDishList.add(detail8);
+        DBOpenHelper helper = new DBOpenHelper(this,"Dish.db");
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c = db.rawQuery("select * from dish",null);
+        if(c!=null){
+            while (c.moveToNext()){
+                int dishId = c.getInt(c.getColumnIndex("_id"));
+                String dishName = c.getString(c.getColumnIndex("dishName"));
+                byte[] pic = c.getBlob(c.getColumnIndex("dishImage"));
+                Bitmap dishImage = BitmapFactory.decodeByteArray(pic, 0, pic.length);
+                int dishPrice = c.getInt(c.getColumnIndex("dishPrice"));
+                AllDish detail = new AllDish(dishId,dishName, dishImage, dishPrice);
+                detailDishList.add(detail);
+            }
+            c.close();
+        }
+        db.close();
 
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu2, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
+        switch(item.getItemId()) //得到被点击的item的itemId
+        {
+            case  R.id.id_item1 :  //对应的ID就是在add方法中所设定的Id
+                //Toast.makeText(this, "已点菜品", Toast.LENGTH_SHORT).show();
+                String data = "No";
+                Intent intent = new Intent(this,FoodOrderView.class);
+                intent.putExtra("user_info", user);
+                intent.putExtra("YesOrNo", data);
+                intent.putExtra("orderDishList", (Serializable) orderDishList);
+                startActivity(intent);
+                break;
+            case  R.id.id_item2:
+                String data1 = "Yes";
+                Intent intent1 = new Intent(this,FoodOrderView.class);
+                intent1.putExtra("user_info", user);
+                intent1.putExtra("YesOrNo", data1);
+                intent1.putExtra("orderDishList", (Serializable) orderDishList);
+                startActivity(intent1);
+                break;
+            case  R.id.id_item3:
+                Toast.makeText(this, "呼叫服务", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        return true;
     }
 
     public static void MoveToPosition(LinearLayoutManager manager, RecyclerView mRecyclerView, int n) {
@@ -69,4 +146,9 @@ public class FoodDetailed extends AppCompatActivity{
         }
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+
+    }
 }

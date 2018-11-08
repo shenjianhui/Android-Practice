@@ -8,15 +8,23 @@ import android.widget.Button;
 import android.widget.TextView;
 import java.util.List;
 import es.source.code.activity.R;
-import es.source.code.model.Order;
+import es.source.code.model.AllDish;
 
 public class OrderYesAdapter extends RecyclerView.Adapter<OrderYesAdapter.ViewHolder> {
-    private List<Order> myOrderList;
+    private static List<AllDish> myAllDishList;
     private static final int NORMAL_TYPE = 0;
     private static final int FOOT_TYPE = 1;
+    private static SubClickListener subClickListener;
     private View myFooterView;
-    public OrderYesAdapter(List<Order> orderList){
-        myOrderList = orderList;
+    public void setsubClickListener(SubClickListener topicClickListener) {
+        this.subClickListener = topicClickListener;
+    }
+    public interface SubClickListener {
+        void OntopicClickListener(View v, int price);
+    }
+
+    public OrderYesAdapter(List<AllDish> AllDishList){
+        myAllDishList = AllDishList;
     }
 
     public View getFooterView() {
@@ -40,9 +48,20 @@ public class OrderYesAdapter extends RecyclerView.Adapter<OrderYesAdapter.ViewHo
             super(view);
             if (viewType == FOOT_TYPE){
                 totalNumber = view.findViewById(R.id.order_number);
-                totalNumber.setText("菜品总数：5份");
+                totalNumber.setText("菜品总数："+myAllDishList.size());
                 totalPrice = view.findViewById(R.id.order_price);
-                totalPrice.setText("订单总价：72¥");
+                if(myAllDishList.size()==0){
+                    totalPrice.setText("订单总价：0");
+                }else {
+                    int Price = 0;
+                    for(int i=0;i<myAllDishList.size();i++) {
+                        Price +=  myAllDishList.get(i).getDishPrice()*myAllDishList.get(i).getNumber();
+                        totalPrice.setText("订单总价：" + Price +"¥");
+                        if (subClickListener != null) {
+                            subClickListener.OntopicClickListener(view, Price);
+                        }
+                    }
+                }
                 Submit = view.findViewById(R.id.order_submit);
                 return;
             }
@@ -68,11 +87,15 @@ public class OrderYesAdapter extends RecyclerView.Adapter<OrderYesAdapter.ViewHo
     @Override
     public void onBindViewHolder(OrderYesAdapter.ViewHolder holder, int position) {
         if ( getItemViewType(position) == NORMAL_TYPE) {
-            Order order = myOrderList.get(position);
-            holder.orderName.setText(order.getOrderName());
-            holder.orderPrice.setText(order.getOrderPrice());
-            holder.orderNumber.setText(order.getOrderNumber());
-            holder.orderRemark.setText(order.getOrderRemark());
+            AllDish allDish = myAllDishList.get(position);
+            holder.orderName.setText(allDish.getDishName());
+            holder.orderPrice.setText(allDish.getDishPrice()+"¥");
+            holder.orderNumber.setText(allDish.getNumber()+"份");
+            if(allDish.getDishRemark()==null){
+                holder.orderRemark.setText("备注：无");
+            }else {
+                holder.orderRemark.setText("备注：" + allDish.getDishRemark());
+            }
             return;
         }else{
             return;
@@ -82,9 +105,9 @@ public class OrderYesAdapter extends RecyclerView.Adapter<OrderYesAdapter.ViewHo
     @Override
     public int getItemCount() {
         if(myFooterView == null){
-            return myOrderList.size();
+            return myAllDishList.size();
         }else{
-            return myOrderList.size()+1;
+            return myAllDishList.size()+1;
         }
     }
 

@@ -7,8 +7,14 @@
         android:protectionLevel="dangerous" />
 
     <uses-permission android:name="scos.permission.ACCESSSCOS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name="es.source.code.tool.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -17,14 +23,11 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".SCOSEntry"
-            android:exported="true">
-
-        </activity>
+            android:exported="true" />
         <activity
             android:name=".MainScreen"
             android:exported="true"
             android:permission="scos.permission.ACCESSSCOS">
-
             <intent-filter>
                 <action android:name="scos.intent.action.SCOSMAIN" />
 
@@ -42,10 +45,30 @@
         <activity android:name=".FoodView">
 
         </activity>
-        <activity android:name=".FoodOrderView">
+        <activity android:name=".FoodOrderView" />
+        <activity android:name=".FoodDetailed"></activity>
+        <activity android:name=".SCOSHelper" />
 
-        </activity>
-        <activity android:name=".FoodDetailed">
+        <service
+            android:name="es.source.code.service.ServerObserverService"
+            android:enabled="true"
+            android:exported="true"
+            android:process="es.source.code.observerservice" />
+
+        <receiver
+            android:name="es.source.code.br.DeviceStartedListener"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="es.source.code.service.UpdateService"
+            android:exported="false" />
+
+        <activity android:name=".Test">
 
         </activity>
     </application>
