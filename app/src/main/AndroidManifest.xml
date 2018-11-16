@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:name="es.source.code.tool.MyApplication"
@@ -36,18 +37,20 @@
             </intent-filter>
         </activity>
         <activity android:name=".LoginOrRegister">
+
+        </activity>
+        <activity android:name=".FoodView">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".FoodView">
-
-        </activity>
         <activity android:name=".FoodOrderView" />
         <activity android:name=".FoodDetailed"></activity>
-        <activity android:name=".SCOSHelper" />
+        <activity android:name=".SCOSHelper">
+
+        </activity>
 
         <service
             android:name="es.source.code.service.ServerObserverService"
@@ -63,7 +66,14 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
+        <receiver
+            android:name="es.source.code.br.NotificationBR"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="notification_cancelled" />
+            </intent-filter>
+        </receiver>
         <service
             android:name="es.source.code.service.UpdateService"
             android:exported="false" />

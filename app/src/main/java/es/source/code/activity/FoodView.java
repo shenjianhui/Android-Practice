@@ -35,6 +35,7 @@ import java.util.List;
 import es.source.code.model.AllDish;
 import es.source.code.model.User;
 import es.source.code.service.ServerObserverService;
+import es.source.code.service.UpdateService;
 import es.source.code.tool.AllDishAdapter;
 import es.source.code.tool.DBOpenHelper;
 import es.source.code.tool.MyPagerAdapter;
@@ -67,18 +68,23 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
                     //Log.i("info", "进行菜品更新----"+ msg.getData().getString("name") +"---"+msg.getData().getInt("inventory"));
                     String name1 = msg.getData().getString("name1");
                     int inventory1 = msg.getData().getInt("inventory1");
+                    int price1 = msg.getData().getInt("price1");
                     String name2 = msg.getData().getString("name2");
                     int inventory2 = msg.getData().getInt("inventory2");
+                    int price2 = msg.getData().getInt("price2");
                     DBOpenHelper helper = new DBOpenHelper(getContext(),"Dish.db");
                     SQLiteDatabase db = helper.getWritableDatabase();
-                    db.execSQL("update dish set inventory=inventory+1 where dishName=?",new String[]{name1});
-                    db.execSQL("update dish set inventory=inventory-1 where dishName=?",new String[]{name2});
+                    db.execSQL("update dish set inventory="+inventory1+",dishPrice="+price1+" where dishName=?",new String[]{name1});
+                    db.execSQL("update dish set inventory="+inventory2+",dishPrice="+price2+" where dishName=?",new String[]{name2});
                     db.close();
                     SharedPreferences sharedPreferences = getSharedPreferences("menuFlag",Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("flag",0);
                     editor.apply();
                     refresh();
+                    break;
+                case 0:
+
                     break;
                 default:
                     break;
@@ -294,6 +300,26 @@ public class FoodView extends AppCompatActivity implements ViewPager.OnPageChang
                     item.setTitle("启动实时更新");
                     //unbindService(connection);
                 }
+                break;
+            case R.id.id_item5:
+                Intent service = new Intent(getContext(), UpdateService.class);
+                getContext().startService(service);
+                break;
+            case R.id.id_item6:
+                DBOpenHelper helper = new DBOpenHelper(this,"Dish.db");
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.delete("dish","dishName = ?",new String[]{"东北家拌凉菜"});
+                ContentValues values = new ContentValues();
+                values.put("inventory",10);
+                values.put("dishPrice",18);
+                db.update("dish",values,"dishName = ?",new String[]{"鱼卵沙拉冷盘"});
+                values.clear();
+                values.put("inventory",20);
+                values.put("dishPrice",28);
+                db.update("dish",values,"dishName = ?",new String[]{"卤牛腱冷盘"});
+                db.close();
+                Toast.makeText(this,"重置成功！",Toast.LENGTH_SHORT).show();
+                refresh();
                 break;
         }
         return true;

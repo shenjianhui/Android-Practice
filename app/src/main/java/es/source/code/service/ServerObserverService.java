@@ -20,9 +20,10 @@ public class ServerObserverService extends Service {
 
     String name1,name2;
     int inventory1,inventory2;
+    int price1,price2;
     @SuppressLint("HandlerLeak")
     private Handler cMessageHandler = new Handler(){
-        public void handleMessage(Message msg){
+        public void handleMessage(final Message msg){
             switch (msg.what){
                 case 1:
                     //开启线程
@@ -31,9 +32,11 @@ public class ServerObserverService extends Service {
                         public void run() {
                             try {
                                 name1 = "鱼卵沙拉冷盘";
-                                inventory1 = 5;
+                                inventory1 = 25;
+                                price1 = 22;
                                 name2 = "卤牛腱冷盘";
-                                inventory2 = 18;
+                                inventory2 = 16;
+                                price2 = 33;
                                 Thread.sleep(300);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -47,8 +50,10 @@ public class ServerObserverService extends Service {
                         Bundle mBundle = new Bundle();
                         mBundle.putString("name1", name1);
                         mBundle.putInt("inventory1",inventory1);
+                        mBundle.putInt("price1",price1);
                         mBundle.putString("name2", name2);
                         mBundle.putInt("inventory2",inventory2);
+                        mBundle.putInt("price2",price2);
                         mMessage.setData(mBundle);
                         try {
                             mMessenger.send(mMessage);

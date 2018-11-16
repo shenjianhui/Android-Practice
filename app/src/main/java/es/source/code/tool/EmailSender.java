@@ -23,6 +23,7 @@ public class EmailSender {
         super();
         this.properties = new Properties();
     }
+
     public void setProperties(String host,String post){
         //地址
         this.properties.put("mail.smtp.host",host);

@@ -120,11 +120,11 @@ public class LoginOrRegister extends AppCompatActivity implements View.OnClickLi
                 Bundle data=new Bundle();
                 data.putString("result",result);
                 msg.setData(data);
-                hander.sendMessage(msg);
+                handler1.sendMessage(msg);
             }
 
             @SuppressLint("HandlerLeak")
-            Handler hander = new Handler(){
+            Handler handler1 = new Handler(){
                 @Override
                 public void handleMessage(Message msg) {
                     if (msg.what==0x12){

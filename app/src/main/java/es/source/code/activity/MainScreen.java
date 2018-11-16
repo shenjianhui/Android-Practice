@@ -33,17 +33,20 @@ public class MainScreen extends AppCompatActivity implements AdapterView.OnItemC
         SharedPreferences sharedPreferences = getSharedPreferences("userInfo",Context.MODE_PRIVATE);
         int flag = sharedPreferences.getInt("loginState",-1);
         Intent intent = getIntent();
-        String data = intent.getStringExtra("extra_data");
-        if (flag!=1) {
-            icon = Arrays.asList(R.drawable.ic_login,R.drawable.ic_help);
-            iconName = Arrays.asList("登录/注册","系统帮助");
-        }
-        if (flag==1) {
-            user = (User) getIntent().getSerializableExtra("user_info");
-            if (data.equals("RegisterSuccess")) {
-                Toast.makeText(this, "欢迎您成为SCOS新用户！", Toast.LENGTH_SHORT).show();
+        try {
+            String data = intent.getStringExtra("extra_data");
+            if (flag != 1) {
+                icon = Arrays.asList(R.drawable.ic_login, R.drawable.ic_help);
+                iconName = Arrays.asList("登录/注册", "系统帮助");
             }
-
+            if (flag == 1) {
+                user = (User) getIntent().getSerializableExtra("user_info");
+                if (data.equals("RegisterSuccess")) {
+                    Toast.makeText(this, "欢迎您成为SCOS新用户！", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         gridView = findViewById(R.id.gridView);

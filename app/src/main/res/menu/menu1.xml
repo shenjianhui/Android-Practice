@@ -5,4 +5,6 @@
     <item android:id="@+id/id_item2" android:title="查看订单"/>
     <item android:id="@+id/id_item3" android:title="呼叫服务"/>
     <item android:id="@+id/id_item4" android:title="停止实时更新"/>
+    <item android:id="@+id/id_item5" android:title="请求菜品更新"/>
+    <item android:id="@+id/id_item6" android:title="重置信息"/>
 </menu>

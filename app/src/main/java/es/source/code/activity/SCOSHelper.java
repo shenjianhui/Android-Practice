@@ -33,7 +33,8 @@ public class SCOSHelper extends AppCompatActivity implements AdapterView.OnItemC
     public List<Map<String,Object>> dataList;
     public SimpleAdapter adapter;
     public final static int SEND_SUCCESS = 1;
-    List<Integer> icon = Arrays.asList(R.drawable.ic_helprule,R.drawable.ic_helpabout,R.drawable.ic_helptel,R.drawable.ic_helpnote,R.drawable.ic_helpmail);
+    List<Integer> icon = Arrays.asList(R.drawable.ic_helprule,R.drawable.ic_helpabout,
+            R.drawable.ic_helptel,R.drawable.ic_helpnote,R.drawable.ic_helpmail);
     List<String> iconName = Arrays.asList("使用协议","关于系统","电话帮助","短信帮助","邮件帮助");
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -95,7 +96,8 @@ public class SCOSHelper extends AppCompatActivity implements AdapterView.OnItemC
             String content = "test SCOS helper";
             SmsManager smsManager = SmsManager.getDefault();
             try {
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(this,SCOSHelper.class), 0);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+                                        new Intent(this,SCOSHelper.class), 0);
                 smsManager.sendTextMessage(tel, null, content, pendingIntent, null);
             } catch (Exception e) {
                 e.printStackTrace();
